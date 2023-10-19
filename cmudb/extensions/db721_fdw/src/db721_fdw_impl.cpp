@@ -11,6 +11,7 @@ extern "C" {
 #include "../../../../src/include/optimizer/pathnode.h"
 #include "../../../../src/include/optimizer/restrictinfo.h"
 #include "../../../../src/include/optimizer/planmain.h"
+#include "../../../../src/include/utils/builtins.h"
 }
 // clang-format on
 
@@ -58,13 +59,33 @@ db721_GetForeignPlan(PlannerInfo *root, RelOptInfo *baserel, Oid foreigntableid,
   );
 }
 
+typedef struct db721_state {
+  int current;
+} db721_state;
+
 extern "C" void db721_BeginForeignScan(ForeignScanState *node, int eflags) {
-  // TODO(721): Write me!
+  db721_state *state = (db721_state*) palloc0(sizeof(db721_state));
+  node->fdw_state = state;
 }
 
 extern "C" TupleTableSlot *db721_IterateForeignScan(ForeignScanState *node) {
   // TODO(721): Write me!
-  return nullptr;
+  TupleTableSlot *slot = node->ss.ss_ScanTupleSlot;
+  ExecClearTuple(slot);
+
+  db721_state *state = (db721_state*) node->fdw_state;
+  if (state->current < 3) {
+    slot->tts_isnull[0] = false;
+    slot->tts_values[0] = CStringGetTextDatum("foobar");
+    slot->tts_isnull[1] = false;
+    slot->tts_values[1] = Float4GetDatum(1.2);
+    slot->tts_isnull[2] = false;
+    slot->tts_values[2] = Float4GetDatum(2.5);
+
+    ExecStoreVirtualTuple(slot);
+    state->current++;
+  }
+  return slot;
 }
 
 extern "C" void db721_ReScanForeignScan(ForeignScanState *node) {
