@@ -75,13 +75,15 @@ db721_GetForeignPlan(PlannerInfo *root, RelOptInfo *baserel, Oid foreigntableid,
                    ForeignPath *best_path, List *tlist, List *scan_clauses,
                    Plan *outer_plan) {
   // TODO(721): Write me!
+  db721_TableOptions *opts = (db721_TableOptions *) baserel->fdw_private;
+  List *fdw_private = list_make2(makeString(opts->filename), makeString(opts->tablename));
   scan_clauses = extract_actual_clauses(scan_clauses, false);
   return make_foreignscan(
     tlist,
     scan_clauses,
     baserel->relid,
     NIL,
-    NIL,
+    fdw_private,
     NIL,
     NIL,
     outer_plan
@@ -90,10 +92,25 @@ db721_GetForeignPlan(PlannerInfo *root, RelOptInfo *baserel, Oid foreigntableid,
 
 typedef struct db721_state {
   int current;
+  char *filename;
+  FILE *tablefile;
 } db721_state;
 
 extern "C" void db721_BeginForeignScan(ForeignScanState *node, int eflags) {
   db721_state *state = (db721_state*) palloc0(sizeof(db721_state));
+  ForeignScan *fs = (ForeignScan *) node->ss.ps.plan;
+  char *filename = strVal(linitial(fs->fdw_private));
+  char *tablename = strVal(lsecond(fs->fdw_private));
+  FILE *tablefile = AllocateFile(filename, PG_BINARY_R);
+  if (tablefile == NULL) {
+    ereport(ERROR, 
+      errcode_for_file_access(),
+      errmsg("could not open file \"%s\"", filename)
+    );
+  }
+  state->tablefile = tablefile;
+  state->filename = filename;
+  elog(LOG, "db721_BeginForeignScan options: %s %s", filename, tablename);
   node->fdw_state = state;
 }
 
@@ -123,4 +140,12 @@ extern "C" void db721_ReScanForeignScan(ForeignScanState *node) {
 
 extern "C" void db721_EndForeignScan(ForeignScanState *node) {
   // TODO(721): Write me!
+  db721_state *state = (db721_state*) node->fdw_state;
+  int result = FreeFile(state->tablefile);
+  if (result != 0) {
+    ereport(ERROR, 
+      errcode_for_file_access(),
+      errmsg("could not close file \"%s\"", state->filename)
+    );
+  }
 }

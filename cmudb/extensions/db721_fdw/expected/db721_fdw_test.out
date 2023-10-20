@@ -7,7 +7,7 @@ CREATE FOREIGN TABLE IF NOT EXISTS db721_farm
     max_age_weeks   real
 ) SERVER db721_server OPTIONS
 (
-    filename '/home/kapi/git/postgres/data-farms.db721',
+    filename '/home/kmzk/ghq/github.com/komukomo/postgres/cmudb/extensions/db721_fdw/data-farms.db721',
     tablename 'Farm'
 );
 SELECT * FROM db721_farm;
