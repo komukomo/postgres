@@ -9,7 +9,7 @@
 EXTENSION = db721_fdw
 MODULE_big = db721_fdw
 DATA = db721_fdw--0.0.1.sql
-OBJS = src/dog.o src/db721_fdw_impl.o src/db721_fdw.o
+OBJS = src/dog.o src/db721_fdw_impl.o src/db721_fdw.o src/db721_reader.o
 SHLIB_LINK = -lstdc++
 REGRESS = db721_fdw_test
 
@@ -28,3 +28,13 @@ override PG_CXXFLAGS += -Wno-register 	# PostgreSQL uses the register storage cl
 
 PGXS := $(shell $(PG_CONFIG) --pgxs)
 include $(PGXS)
+
+# Testing
+# src/db721_reader.o: src/db721_reader.cpp
+# 	g++ -std=c++17 -c src/db721_reader.cpp -o src/db721_reader.o
+db721_reader: src/db721_reader.o
+	g++ -o db721_reader src/db721_reader.o
+.PHONY: kmzk
+kmzk: db721_reader
+	./db721_reader
+

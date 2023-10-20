@@ -2,6 +2,7 @@
 // https://www.postgresql.org/docs/15/xfunc-c.html#EXTEND-CPP
 
 #include "dog.h"
+#include "db721_reader.h"
 
 // clang-format off
 extern "C" {
@@ -94,6 +95,7 @@ typedef struct db721_state {
   int current;
   char *filename;
   FILE *tablefile;
+  Metadata metadata;
 } db721_state;
 
 extern "C" void db721_BeginForeignScan(ForeignScanState *node, int eflags) {
@@ -102,6 +104,10 @@ extern "C" void db721_BeginForeignScan(ForeignScanState *node, int eflags) {
   char *filename = strVal(linitial(fs->fdw_private));
   char *tablename = strVal(lsecond(fs->fdw_private));
   FILE *tablefile = AllocateFile(filename, PG_BINARY_R);
+  auto metadata = read_metadata(tablefile);
+  // elog(LOG, "reader_foo called %s", farm.columns[0].data()->name.c_str());
+  // elog(LOG, "reader_foo called: %s", farm.c_str());
+
   if (tablefile == NULL) {
     ereport(ERROR, 
       errcode_for_file_access(),
@@ -110,6 +116,7 @@ extern "C" void db721_BeginForeignScan(ForeignScanState *node, int eflags) {
   }
   state->tablefile = tablefile;
   state->filename = filename;
+  state->metadata = metadata;
   elog(LOG, "db721_BeginForeignScan options: %s %s", filename, tablename);
   node->fdw_state = state;
 }
@@ -120,6 +127,7 @@ extern "C" TupleTableSlot *db721_IterateForeignScan(ForeignScanState *node) {
   ExecClearTuple(slot);
 
   db721_state *state = (db721_state*) node->fdw_state;
+  read_column(state->tablefile, state->metadata, "farm_name");
   if (state->current < 3) {
     slot->tts_isnull[0] = false;
     slot->tts_values[0] = CStringGetTextDatum("foobar");
