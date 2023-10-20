@@ -8,18 +8,47 @@ extern "C" {
 #include "../../../../src/include/postgres.h"
 #include "../../../../src/include/fmgr.h"
 #include "../../../../src/include/foreign/fdwapi.h"
+#include "../../../../src/include/foreign/foreign.h"
 #include "../../../../src/include/optimizer/pathnode.h"
 #include "../../../../src/include/optimizer/restrictinfo.h"
 #include "../../../../src/include/optimizer/planmain.h"
 #include "../../../../src/include/utils/builtins.h"
+#include "../../../../src/include/utils/rel.h"
+#include "../../../../src/include/access/table.h"
+#include "../../../../src/include/commands/defrem.h"
 }
 // clang-format on
+
+typedef struct db721_TableOptions {
+  char *filename, *tablename;
+} db721_TableOptions;
+
 
 extern "C" void db721_GetForeignRelSize(PlannerInfo *root, RelOptInfo *baserel,
                                       Oid foreigntableid) {
   // TODO(721): Write me!
   Dog terrier("Terrier");
   elog(LOG, "db721_GetForeignRelSize: %s", terrier.Bark().c_str());
+
+  ForeignTable *ft = GetForeignTable(foreigntableid);
+  ListCell *cell;
+  char *filename = NULL;
+  char *tablename = NULL;
+  foreach(cell, ft->options) {
+    DefElem *def = lfirst_node(DefElem, cell);
+    if (strcmp("filename", def->defname) == 0) {
+      filename = defGetString(def);
+    }
+    if (strcmp("tablename", def->defname) == 0) {
+      tablename = defGetString(def);
+    }
+  }
+
+  elog(LOG, "db721_GetForeignRelSize options: %s %s", filename, tablename);
+  db721_TableOptions *opts = (db721_TableOptions *) palloc(sizeof(db721_TableOptions));
+  opts->filename = filename;
+  opts->tablename = tablename;
+  baserel->fdw_private = opts;
 }
 
 extern "C" void db721_GetForeignPaths(PlannerInfo *root, RelOptInfo *baserel,
