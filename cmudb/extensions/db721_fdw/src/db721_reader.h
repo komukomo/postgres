@@ -8,6 +8,7 @@
 extern "C" {
 // #include "../../../../src/include/postgres.h"
 #include "postgres.h"
+#include "utils/builtins.h"
 }
 #undef vsnprintf
 #undef snprintf
@@ -60,3 +61,22 @@ typedef struct Metadata {
 
 Metadata read_metadata(FILE *fp);
 // void read_column(FILE *fp, Metadata meta, std::string column_name);
+
+
+class Db721Reader {
+public:
+    std::vector<char*> data_blocks;
+    std::vector<std::string> column_names;
+    std::vector<DataType> column_types;
+    FILE *fp;
+    Metadata meta;
+    int current_row;
+    int current_block;
+    int block_size;
+    Db721Reader(FILE *fp, Metadata meta);
+    void read_block();
+    bool read_next(Datum *datum);
+    void read_column(int block_idx, int column_idx);
+    Datum datum_by_row(int column_idx);
+    void display();
+};

@@ -11,10 +11,13 @@ CREATE FOREIGN TABLE IF NOT EXISTS db721_farm
     tablename 'Farm'
 );
 SELECT * FROM db721_farm;
- farm_name | min_age_weeks | max_age_weeks 
------------+---------------+---------------
- foobar    |           1.2 |           2.5
- foobar    |           1.2 |           2.5
- foobar    |           1.2 |           2.5
-(3 rows)
+       farm_name        | min_age_weeks | max_age_weeks 
+------------------------+---------------+---------------
+ Incubator              |             2 |             0
+ Eggscellent            |           156 |            24
+ Eggstraordinaire       |           156 |            52
+ Breakfast Lunch Dinner |             6 |             0
+ Dish of the Day        |             8 |             0
+ Cheep Birds            |             6 |             0
+(6 rows)
 

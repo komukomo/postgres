@@ -108,6 +108,7 @@ typedef struct db721_state {
   char *filename;
   FILE *tablefile;
   Metadata metadata;
+  Db721Reader reader;
 } db721_state;
 
 extern "C" void db721_BeginForeignScan(ForeignScanState *node, int eflags) {
@@ -129,6 +130,7 @@ extern "C" void db721_BeginForeignScan(ForeignScanState *node, int eflags) {
   state->tablefile = tablefile;
   state->filename = filename;
   state->metadata = metadata;
+  state->reader = Db721Reader(tablefile, metadata);
   elog(LOG, "db721_BeginForeignScan options: %s %s", filename, tablename);
   node->fdw_state = state;
 }
@@ -139,17 +141,11 @@ extern "C" TupleTableSlot *db721_IterateForeignScan(ForeignScanState *node) {
   ExecClearTuple(slot);
 
   db721_state *state = (db721_state*) node->fdw_state;
-  // read_column(state->tablefile, state->metadata, "farm_name");
-  if (state->current < 3) {
-    slot->tts_isnull[0] = false;
-    slot->tts_values[0] = CStringGetTextDatum("foobar");
-    slot->tts_isnull[1] = false;
-    slot->tts_values[1] = Float4GetDatum(1.2);
-    slot->tts_isnull[2] = false;
-    slot->tts_values[2] = Float4GetDatum(2.5);
-
+  if (state->reader.read_next(slot->tts_values)) {
     ExecStoreVirtualTuple(slot);
-    state->current++;
+    for (int i = 0; i < slot->tts_tupleDescriptor->natts; i++) {
+      slot->tts_isnull[i] = false;
+    }
   }
   return slot;
 }
