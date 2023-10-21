@@ -6,7 +6,8 @@
 
 // clang-format off
 extern "C" {
-#include "../../../../src/include/postgres.h"
+// #include "../../../../src/include/postgres.h"
+#include "postgres.h"
 }
 #undef vsnprintf
 #undef snprintf
@@ -58,4 +59,4 @@ typedef struct Metadata {
 } Metadata;
 
 Metadata read_metadata(FILE *fp);
-void read_column(FILE *fp, Metadata meta, std::string column_name);
+// void read_column(FILE *fp, Metadata meta, std::string column_name);

@@ -14,8 +14,11 @@ SHLIB_LINK = -lstdc++
 REGRESS = db721_fdw_test
 
 # If PG_CONFIG is not set, try the default NoisePage build folder first, then try PATH.
-PG_CONFIG ?= ../../../build/postgres/bin/pg_config
+# PG_CONFIG ?= ../../../build/postgres/bin/pg_config
 PG_CONFIG ?= pg_config
+
+# PG_LDFLAGS += "-L/opt/homebrew/lib"
+PG_CPPFLAGS += "-I/opt/homebrew/include"
 
 override PG_CXXFLAGS += -std=c++17 		# We generally use C++17.
 override PG_CXXFLAGS += -Wno-register 	# PostgreSQL uses the register storage class.
@@ -37,4 +40,8 @@ db721_reader: src/db721_reader.o
 .PHONY: kmzk
 kmzk: db721_reader
 	./db721_reader
+.PHONY: testdata
+testdata:
+	mkdir -p /tmp/testdata
+	cp *.db721 /tmp/testdata/
 

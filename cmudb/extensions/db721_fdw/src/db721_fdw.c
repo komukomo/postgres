@@ -11,9 +11,13 @@
 // fmgr.h, PG_MODULE_MAGIC, and PG_FUNCTION_INFO_V1.
 
 // clang-format off
-#include "../../../../src/include/postgres.h"
-#include "../../../../src/include/fmgr.h"
-#include "../../../../src/include/foreign/fdwapi.h"
+// #include "../../../../src/include/postgres.h"
+// #include "../../../../src/include/fmgr.h"
+// #include "../../../../src/include/foreign/fdwapi.h"
+
+#include "postgres.h"
+#include "fmgr.h"
+#include "foreign/fdwapi.h"
 // clang-format on
 
 Datum db721_fdw_handler(PG_FUNCTION_ARGS);

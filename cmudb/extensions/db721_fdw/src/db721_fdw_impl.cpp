@@ -6,17 +6,29 @@
 
 // clang-format off
 extern "C" {
-#include "../../../../src/include/postgres.h"
-#include "../../../../src/include/fmgr.h"
-#include "../../../../src/include/foreign/fdwapi.h"
-#include "../../../../src/include/foreign/foreign.h"
-#include "../../../../src/include/optimizer/pathnode.h"
-#include "../../../../src/include/optimizer/restrictinfo.h"
-#include "../../../../src/include/optimizer/planmain.h"
-#include "../../../../src/include/utils/builtins.h"
-#include "../../../../src/include/utils/rel.h"
-#include "../../../../src/include/access/table.h"
-#include "../../../../src/include/commands/defrem.h"
+// #include "../../../../src/include/postgres.h"
+// #include "../../../../src/include/fmgr.h"
+// #include "../../../../src/include/foreign/fdwapi.h"
+// #include "../../../../src/include/foreign/foreign.h"
+// #include "../../../../src/include/optimizer/pathnode.h"
+// #include "../../../../src/include/optimizer/restrictinfo.h"
+// #include "../../../../src/include/optimizer/planmain.h"
+// #include "../../../../src/include/utils/builtins.h"
+// #include "../../../../src/include/utils/rel.h"
+// #include "../../../../src/include/access/table.h"
+// #include "../../../../src/include/commands/defrem.h"
+
+#include "postgres.h"
+#include "fmgr.h"
+#include "foreign/fdwapi.h"
+#include "foreign/foreign.h"
+#include "optimizer/pathnode.h"
+#include "optimizer/restrictinfo.h"
+#include "optimizer/planmain.h"
+#include "utils/builtins.h"
+#include "utils/rel.h"
+#include "access/table.h"
+#include "commands/defrem.h"
 }
 // clang-format on
 
@@ -127,7 +139,7 @@ extern "C" TupleTableSlot *db721_IterateForeignScan(ForeignScanState *node) {
   ExecClearTuple(slot);
 
   db721_state *state = (db721_state*) node->fdw_state;
-  read_column(state->tablefile, state->metadata, "farm_name");
+  // read_column(state->tablefile, state->metadata, "farm_name");
   if (state->current < 3) {
     slot->tts_isnull[0] = false;
     slot->tts_values[0] = CStringGetTextDatum("foobar");

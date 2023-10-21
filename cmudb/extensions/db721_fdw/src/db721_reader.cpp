@@ -155,9 +155,12 @@ Metadata read_metadata(FILE *fp) {
 
 
 int main() {
-    // std::cout << "Hello World\n";
-    char *filepath = "/home/kmzk/ghq/github.com/komukomo/postgres/cmudb/extensions/db721_fdw/data-farms.db721";
+    char *filepath = "/tmp/testdata/data-farms.db721";
     FILE *fp = fopen(filepath, "r");
+    if (fp == NULL) {
+        std::cout << "File not found\n";
+        return 1;
+    }
     auto meta = read_metadata(fp);
     auto reader = new Db721Reader();
     reader->meta = meta;
