@@ -15,22 +15,27 @@ int get_size(DataType typ) {
     // TODO: else Error
 }
 
+std::vector<DataType> get_column_types(Metadata meta) {
+    std::vector<DataType> column_types;
+    for (auto column_meta: *meta.columns) {
+        column_types.push_back(column_meta.type);
+    }
+    return column_types;
+}
+
 
 Db721Reader::Db721Reader(FILE *_fp) {
     fp = _fp;
     meta = read_metadata(fp);
-    column_names = {"farm_name", "min_age_weeks", "max_age_weeks"};
-    column_types = {DataType::Str, DataType::Float, DataType::Float};
+    column_types = get_column_types(meta);
     current_row = 0;
     current_block = 0;
     block_size = 0;
     read_block();
-    std::cout << "reader created" << std::endl;
 }
 
 void Db721Reader::read_block() {
-    std::cout << "read_block" << std::endl;
-    for (int i = 0; i < column_names.size(); i++) {
+    for (int i = 0; i < column_types.size(); i++) {
         read_column(current_block ,i);
     }
 }
@@ -49,7 +54,6 @@ bool Db721Reader::read_next(Datum *datum) {
 }
 
 void Db721Reader::read_column(int block_idx, int column_idx) {
-    std::cout << "read_column" + column_idx << std::endl;
     auto column_meta = meta.columns->at(column_idx);
     fseek(fp, column_meta.start_offset, SEEK_SET);
     int datanum = column_meta.block_stats[block_idx].data()->num;
@@ -57,7 +61,7 @@ void Db721Reader::read_column(int block_idx, int column_idx) {
 
     int type_size = get_size(column_meta.type);
     int size = sizeof(char) * type_size * datanum;
-    data_blocks.push_back((char *)palloc(size));
+    data_blocks.push_back((char *)malloc(size));
     fread(data_blocks[column_idx], type_size, datanum, fp);
 }
 
@@ -118,8 +122,7 @@ Metadata read_metadata(FILE *fp) {
     fseek(fp, -metaSizeByte-metaSize, SEEK_END);
     fgets(metaBuf, metaSize + 1, fp);
 
-    // std::cout << metaSize;
-    std::cout << metaBuf << std::endl;
+    // std::cout << metaBuf << std::endl;
 
     json data = json::parse(metaBuf);
     std::vector<ColumnMeta> *column_metas = new std::vector<ColumnMeta>;
@@ -165,15 +168,16 @@ Metadata read_metadata(FILE *fp) {
 
 
 int main() {
-    char *filepath = "/tmp/testdata/data-farms.db721";
+    // char *filepath = "/tmp/testdata/data-farms.db721";
+    char *filepath = "/tmp/testdata/data-chickens.db721";
     FILE *fp = fopen(filepath, "r");
     if (fp == NULL) {
         std::cout << "File not found\n";
         return 1;
     }
     auto meta = read_metadata(fp);
-    auto reader = new Db721Reader(fp);
-    reader->read_block();
+    // auto reader = new Db721Reader(fp);
+    // reader->read_block();
 
     // reader->display();
     // read_column(fp, meta, "farm_name");
