@@ -107,7 +107,6 @@ typedef struct db721_state {
   int current;
   char *filename;
   FILE *tablefile;
-  Metadata metadata;
   Db721Reader reader;
 } db721_state;
 
@@ -117,9 +116,6 @@ extern "C" void db721_BeginForeignScan(ForeignScanState *node, int eflags) {
   char *filename = strVal(linitial(fs->fdw_private));
   char *tablename = strVal(lsecond(fs->fdw_private));
   FILE *tablefile = AllocateFile(filename, PG_BINARY_R);
-  auto metadata = read_metadata(tablefile);
-  // elog(LOG, "reader_foo called %s", farm.columns[0].data()->name.c_str());
-  // elog(LOG, "reader_foo called: %s", farm.c_str());
 
   if (tablefile == NULL) {
     ereport(ERROR, 
@@ -129,8 +125,7 @@ extern "C" void db721_BeginForeignScan(ForeignScanState *node, int eflags) {
   }
   state->tablefile = tablefile;
   state->filename = filename;
-  state->metadata = metadata;
-  state->reader = Db721Reader(tablefile, metadata);
+  state->reader = Db721Reader(tablefile);
   elog(LOG, "db721_BeginForeignScan options: %s %s", filename, tablename);
   node->fdw_state = state;
 }

@@ -16,9 +16,9 @@ int get_size(DataType typ) {
 }
 
 
-Db721Reader::Db721Reader(FILE *_fp, Metadata _meta) {
-    meta = _meta;
+Db721Reader::Db721Reader(FILE *_fp) {
     fp = _fp;
+    meta = read_metadata(fp);
     column_names = {"farm_name", "min_age_weeks", "max_age_weeks"};
     column_types = {DataType::Str, DataType::Float, DataType::Float};
     current_row = 0;
@@ -172,7 +172,7 @@ int main() {
         return 1;
     }
     auto meta = read_metadata(fp);
-    auto reader = new Db721Reader(fp, meta);
+    auto reader = new Db721Reader(fp);
     reader->read_block();
 
     // reader->display();

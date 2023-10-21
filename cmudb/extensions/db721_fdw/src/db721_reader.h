@@ -73,7 +73,7 @@ public:
     int current_row;
     int current_block;
     int block_size;
-    Db721Reader(FILE *fp, Metadata meta);
+    Db721Reader(FILE *fp);
     void read_block();
     bool read_next(Datum *datum);
     void read_column(int block_idx, int column_idx);
