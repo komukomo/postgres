@@ -40,8 +40,8 @@ typedef struct db721_TableOptions {
 extern "C" void db721_GetForeignRelSize(PlannerInfo *root, RelOptInfo *baserel,
                                       Oid foreigntableid) {
   // TODO(721): Write me!
-  Dog terrier("Terrier");
-  elog(LOG, "db721_GetForeignRelSize: %s", terrier.Bark().c_str());
+  // Dog terrier("Terrier");
+  // elog(LOG, "db721_GetForeignRelSize: %s", terrier.Bark().c_str());
 
   ForeignTable *ft = GetForeignTable(foreigntableid);
   ListCell *cell;
@@ -67,8 +67,8 @@ extern "C" void db721_GetForeignRelSize(PlannerInfo *root, RelOptInfo *baserel,
 extern "C" void db721_GetForeignPaths(PlannerInfo *root, RelOptInfo *baserel,
                                     Oid foreigntableid) {
   // TODO(721): Write me!
-  Dog scout("Scout");
-  elog(LOG, "db721_GetForeignPaths: %s", scout.Bark().c_str());
+  // Dog scout("Scout");
+  // elog(LOG, "db721_GetForeignPaths: %s", scout.Bark().c_str());
 
   Path *path = (Path *)create_foreignscan_path(root, baserel,
     NULL,
@@ -126,7 +126,7 @@ extern "C" void db721_BeginForeignScan(ForeignScanState *node, int eflags) {
   state->tablefile = tablefile;
   state->filename = filename;
   state->reader = Db721Reader(tablefile);
-  elog(LOG, "db721_BeginForeignScan options: %s %s", filename, tablename);
+  // elog(LOG, "db721_BeginForeignScan options: %s %s", filename, tablename);
   node->fdw_state = state;
 }
 

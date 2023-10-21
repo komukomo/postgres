@@ -73,6 +73,7 @@ public:
     int current_row;
     int current_block;
     int block_size;
+    int num_blocks;
     Db721Reader(FILE *fp);
     void read_block();
     bool read_next(Datum *datum);

@@ -10,14 +10,39 @@ CREATE FOREIGN TABLE IF NOT EXISTS db721_farm
     filename '/tmp/testdata/data-farms.db721',
     tablename 'Farm'
 );
-SELECT * FROM db721_farm;
-       farm_name        | min_age_weeks | max_age_weeks 
-------------------------+---------------+---------------
- Incubator              |             2 |             0
- Eggscellent            |           156 |            24
- Eggstraordinaire       |           156 |            52
- Breakfast Lunch Dinner |             6 |             0
- Dish of the Day        |             8 |             0
- Cheep Birds            |             6 |             0
-(6 rows)
+-- SELECT * FROM db721_farm;
+CREATE FOREIGN TABLE IF NOT EXISTS db721_chickens
+(
+    age_weeks       real,
+    farm_name       varchar,
+    identifier      int,
+    notes           varchar,
+    sex             varchar,
+    weight_g        real,
+    weight_model    varchar
+) SERVER db721_server OPTIONS
+(
+    filename '/tmp/testdata/data-chickens.db721',
+    tablename 'Chicken'
+);
+SELECT * FROM db721_chickens ORDER BY identifier LIMIT 10 ;
+ age_weeks |  farm_name  | identifier | notes |  sex   | weight_g  | weight_model 
+-----------+-------------+------------+-------+--------+-----------+--------------
+      5.65 | Cheep Birds |          1 | WOODY | FEMALE | 2760.2078 | MMF
+      5.83 | Cheep Birds |          2 | WOODY | FEMALE |  2487.192 | GOMPERTZ
+       3.6 | Cheep Birds |          3 | WOODY | FEMALE | 1328.6763 | MMF
+      1.89 | Cheep Birds |          4 | WOODY | MALE   |  900.1773 | GOMPERTZ
+      3.72 | Cheep Birds |          5 | WOODY | MALE   | 1314.6571 | WEIBULL
+      0.05 | Cheep Birds |          6 | WOODY | FEMALE | 682.60333 | GOMPERTZ
+      3.63 | Cheep Birds |          7 | WOODY | FEMALE | 1338.5049 | GOMPERTZ
+      1.35 | Cheep Birds |          8 | WOODY | FEMALE | 849.00696 | WEIBULL
+      4.67 | Cheep Birds |          9 | WOODY | FEMALE | 1867.4893 | MMF
+      2.98 | Cheep Birds |         10 | WOODY | MALE   | 1122.4009 | GOMPERTZ
+(10 rows)
+
+SELECT count(*) FROM db721_chickens;
+ count  
+--------
+ 120000
+(1 row)
 

@@ -31,37 +31,53 @@ Db721Reader::Db721Reader(FILE *_fp) {
     current_row = 0;
     current_block = 0;
     block_size = 0;
+    num_blocks = meta.columns->at(0).num_blocks;
     read_block();
 }
 
 void Db721Reader::read_block() {
+    data_blocks.clear();
     for (int i = 0; i < column_types.size(); i++) {
-        read_column(current_block ,i);
+        read_column(current_block, i);
     }
 }
 
 bool Db721Reader::read_next(Datum *datum) {
-    auto len = meta.columns->size();
-    for (int i = 0; i < len; i++) {
-        datum[i] = datum_by_row(i);
-    }
     if (current_row < block_size) {
+        auto len = meta.columns->size();
+        for (int i = 0; i < len; i++) {
+            datum[i] = datum_by_row(i);
+        }
         current_row++;
+        return true;
+    } else if (current_block < num_blocks-1) {
+        current_block++;
+        current_row = 0;
+        read_block();
+        return read_next(datum);
     } else {
         return false;
     }
-    return true;
 }
 
 void Db721Reader::read_column(int block_idx, int column_idx) {
     auto column_meta = meta.columns->at(column_idx);
-    fseek(fp, column_meta.start_offset, SEEK_SET);
-    int datanum = column_meta.block_stats[block_idx].data()->num;
-    block_size = datanum;
-
     int type_size = get_size(column_meta.type);
-    int size = sizeof(char) * type_size * datanum;
-    data_blocks.push_back((char *)malloc(size));
+    int offset;
+    if (block_idx > 0) {
+        int pre_datanum = column_meta.block_stats->at(block_idx-1).num;
+        offset = pre_datanum * type_size;
+    } else {
+        offset = 0;
+    }
+    if (fseek(fp, column_meta.start_offset + offset, SEEK_SET) != 0) {
+        elog(LOG, "seek error");
+    }
+
+    int datanum = column_meta.block_stats->at(block_idx).num;
+    block_size = datanum;
+    int size = type_size * datanum;
+    data_blocks.push_back((char *)palloc(size));
     fread(data_blocks[column_idx], type_size, datanum, fp);
 }
 
@@ -118,7 +134,7 @@ Metadata read_metadata(FILE *fp) {
     fread(&metaSize, metaSizeByte, 1, fp);
 
     char *metaBuf;
-    metaBuf = (char *) malloc(metaSize + 1);
+    metaBuf = (char *) palloc(metaSize + 1);
     fseek(fp, -metaSizeByte-metaSize, SEEK_END);
     fgets(metaBuf, metaSize + 1, fp);
 
